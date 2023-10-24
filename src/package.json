@@ -5,5 +5,5 @@
   "version": "<VERSION>",
   "author": "LancerComet",
   "tags": ["Bilibili", "Manga"],
-  "homepage": "https://github.com/LancerComet/RuliaReader/tree/master/plugins/bilibili-manga"
+  "homepage": "https://github.com/RuliaReader/plugin.bilibili-manga"
 }
