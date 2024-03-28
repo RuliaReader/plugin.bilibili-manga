@@ -5,5 +5,11 @@
   "version": "<VERSION>",
   "author": "LancerComet",
   "tags": ["Bilibili", "Manga"],
-  "homepage": "https://github.com/RuliaReader/plugin.bilibili-manga"
+  "homepage": "https://github.com/RuliaReader/plugin.bilibili-manga",
+  "userConfig": {
+    "imageQuality": {
+      "displayName": "图片质量",
+      "description": "0 或不填：宽度 1100px；填 1：1500 px；填 2：1920px；填 3：原图."
+    }
+  }
 }
