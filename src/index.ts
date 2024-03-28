@@ -158,11 +158,13 @@ async function getMangaListBySearching (page: number, pageSize: number, keyword:
     }
 
     const result: IGetMangaListResult = {
-      list: response.data.list.map(item => ({
-        title: item.title,
-        url: `https://manga.bilibili.com/detail/mc${item.id}`,
-        coverUrl: item.vertical_cover + '@500w.jpg'
-      }))
+      list: response.data.list.map(item => {
+        return {
+          title: item.title.replace(/<.*?>/g, ''),
+          url: `https://manga.bilibili.com/detail/mc${item.id}`,
+          coverUrl: item.vertical_cover + '@500w.jpg'
+        }
+      })
     }
 
     window.Rulia.endWithResult(result)
@@ -323,12 +325,23 @@ async function getChapterImageList (chapterUrl: string) {
  */
 async function getImageUrl (path: string) {
   // 'path' is in the form of '/bfs/manga/3a6b12f0f9d64a9a5401e0933087a060a022cec4.jpg'.
-
-  const payload = {
-    urls: JSON.stringify([path + '@1100w.jpg'])
-  }
-
   try {
+    const userConfig = window.Rulia.getUserConfig() ?? {}
+    const imageQuality = parseInt(userConfig.imageQuality)
+
+    let quality = '@1100w.jpg'
+    if (imageQuality === 1) {
+      quality = '@1500w.jpg'
+    } else if (imageQuality === 2) {
+      quality = '@1920w.jpg'
+    } else if (imageQuality === 3) {
+      quality = ''
+    }
+
+    const payload = {
+      urls: JSON.stringify([path + quality])
+    }
+
     const rawResponse = await window.Rulia.httpRequest({
       url: 'https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=pc&platform=web',
       method: 'POST',
