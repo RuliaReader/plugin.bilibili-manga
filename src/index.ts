@@ -158,11 +158,13 @@ async function getMangaListBySearching (page: number, pageSize: number, keyword:
     }
 
     const result: IGetMangaListResult = {
-      list: response.data.list.map(item => ({
-        title: item.title,
-        url: `https://manga.bilibili.com/detail/mc${item.id}`,
-        coverUrl: item.vertical_cover + '@500w.jpg'
-      }))
+      list: response.data.list.map(item => {
+        return {
+          title: item.title.replace(/<.*?>/g, ''),
+          url: `https://manga.bilibili.com/detail/mc${item.id}`,
+          coverUrl: item.vertical_cover + '@500w.jpg'
+        }
+      })
     }
 
     window.Rulia.endWithResult(result)
