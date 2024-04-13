@@ -363,3 +363,35 @@ async function getImageUrl (path: string) {
     window.Rulia.endWithException((error as Error).message)
   }
 }
+
+/**
+ *  Add reading history .
+ *
+ *  @param {string} url The manga episode url.
+ */
+async function addReadHistory (url: string) {
+  // url: https://manga.bilibili.com/mc10000/12450
+  const seasonId = url.match(/mc(\d+)/)?.[1]
+  const episodeId = url.match(/\/(\d+)$/)?.[1]
+
+  if (!seasonId || !episodeId) {
+    window.Rulia.endWithException('INVALID_URL')
+    return
+  }
+
+  try {
+    await window.Rulia.httpRequest({
+      url: 'https://manga.bilibili.com/twirp/bookshelf.v1.Bookshelf/AddHistory?device=pc&platform=web',
+      method: 'POST',
+      payload: JSON.stringify({
+        comic_id: parseInt(seasonId),
+        ep_id: parseInt(episodeId)
+      }),
+      contentType: 'application/json'
+    })
+
+    window.Rulia.endWithResult('{}')
+  } catch (error) {
+    window.Rulia.endWithException((error as Error).message)
+  }
+}
