@@ -348,16 +348,34 @@ async function getImageUrl (path: string) {
       payload: JSON.stringify(payload),
       contentType: 'application/json'
     })
-    const response = JSON.parse(rawResponse) as IBilibiliApi<{url: string, token: string}[]>
+    const response = JSON.parse(rawResponse) as IBilibiliApi<{
+      url: string
+      token: string
+      complete_url: string
+      hit_encrpyt: boolean
+    }[]>
 
-    const imageUrl = response.data?.[0]?.url ?? ''
-    const token = response.data?.[0]?.token ?? ''
+    let fullUrl = ''
 
-    if (!imageUrl || !token) {
-      throw new Error('NO_IMAGE_URL_OR_TOKEN')
+    const completeUrl = response.data?.[0]?.complete_url
+    if (completeUrl) {
+      fullUrl = completeUrl
+
+      const hitEncrypt = response.data?.[0]?.hit_encrpyt
+      if (hitEncrypt) {
+        fullUrl += '&hit_encrypt=true'
+      }
+    } else {
+      const imageUrl = response.data?.[0]?.url ?? ''
+      const token = response.data?.[0]?.token ?? ''
+
+      if (!imageUrl || !token) {
+        throw new Error('NO_IMAGE_URL_OR_TOKEN')
+      }
+
+      fullUrl = imageUrl + '?token=' + token
     }
 
-    const fullUrl = imageUrl + '?token=' + token
     window.Rulia.endWithResult(fullUrl)
   } catch (error) {
     window.Rulia.endWithException((error as Error).message)

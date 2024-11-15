@@ -6,6 +6,7 @@
   "author": "LancerComet",
   "tags": ["Bilibili", "Manga"],
   "homepage": "https://github.com/RuliaReader/plugin.bilibili-manga",
+  "requestedVersion": "0.20.0",
   "userConfig": {
     "imageQuality": {
       "displayName": "图片质量",
