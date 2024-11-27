@@ -343,7 +343,7 @@ async function getImageUrl (path: string) {
     }
 
     const rawResponse = await window.Rulia.httpRequest({
-      url: 'https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=pc&platform=web',
+      url: 'https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=pc&platform=web&nov=25',
       method: 'POST',
       payload: JSON.stringify(payload),
       contentType: 'application/json'
