@@ -37,6 +37,21 @@ type MangaListFilterOptions = Array<{
   options: Array<{ label: string, value: string }>
 }>
 
+const BASE_HTTP_HEADERS = {
+  Accept: 'application/json, text/plain, */*',
+  'Accept-Language': 'zh,en;q=0.9',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  Origin: 'https://manga.bilibili.com'
+}
+
+function generateUUID (): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
 /**
  * This function will be invoked in manga list page.
  * The returned data will be used as the filter options for the manga list.
@@ -83,7 +98,7 @@ async function setMangaListFilterOptions () {
 }
 
 async function getMangaListByCategory (page: number, pageSize: number, filterOptions: Record<string, string>) {
-  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ClassPage?device=pc&platform=web'
+  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ClassPage?device=pc&platform=web&nov=25'
   try {
     const payload = {
       style_id: -1,
@@ -92,7 +107,8 @@ async function getMangaListByCategory (page: number, pageSize: number, filterOpt
       order: 3,
       page_num: page,
       page_size: pageSize,
-      is_free: -1
+      is_free: -1,
+      special_tag: 0
     }
 
     if (filterOptions.styles) {
@@ -115,7 +131,12 @@ async function getMangaListByCategory (page: number, pageSize: number, filterOpt
       url,
       method: 'POST',
       payload: JSON.stringify(payload),
-      contentType: 'application/json'
+      contentType: 'application/json',
+      headers: {
+        ...BASE_HTTP_HEADERS,
+        Cookie: `buvid3=${generateUUID()}infoc`,
+        Referer: `https://manga.bilibili.com/classify?from=manga_homepage&styles=${payload.style_id}&areas=${payload.area_id}&status=${payload.is_finish}&prices=${payload.is_free}&orders=${payload.order}&special=0`
+      }
     })
 
     const response = JSON.parse(rawResponse) as IBilibiliApi<IMangaCategoryListItem[]>
@@ -138,7 +159,7 @@ async function getMangaListByCategory (page: number, pageSize: number, filterOpt
 }
 
 async function getMangaListBySearching (page: number, pageSize: number, keyword: string) {
-  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/Search?device=pc&platform=web'
+  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/Search?device=pc&platform=web&nov=25'
   try {
     const rawResponse = await window.Rulia.httpRequest({
       url,
@@ -148,7 +169,11 @@ async function getMangaListBySearching (page: number, pageSize: number, keyword:
         page_num: page,
         page_size: pageSize
       }),
-      contentType: 'application/json'
+      contentType: 'application/json',
+      headers: {
+        ...BASE_HTTP_HEADERS,
+        Referer: `https://manga.bilibili.com/search?from=manga_index&keyword=${encodeURIComponent(keyword)}`
+      }
     })
 
     const response = JSON.parse(rawResponse) as IBilibiliApi<IMangaSearchResult>
@@ -228,7 +253,7 @@ async function getMangaData (dataPageUrl: string) {
     return
   }
 
-  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=pc&platform=web'
+  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=pc&platform=web&nov=25'
   try {
     const rawResponse = await window.Rulia.httpRequest({
       url,
@@ -236,7 +261,12 @@ async function getMangaData (dataPageUrl: string) {
       payload: JSON.stringify({
         comic_id: seasonId
       }),
-      contentType: 'application/json'
+      contentType: 'application/json',
+      headers: {
+        ...BASE_HTTP_HEADERS,
+        Cookie: `buvid3=${generateUUID()}infoc`,
+        Referer: dataPageUrl
+      }
     })
 
     const response = JSON.parse(rawResponse) as IBilibiliApi<IMangaSeason>
@@ -278,7 +308,7 @@ async function getChapterImageList (chapterUrl: string) {
     return
   }
 
-  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/GetImageIndex?device=pc&platform=web'
+  const url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/GetImageIndex?device=pc&platform=web&nov=25'
   try {
     const rawResponse = await window.Rulia.httpRequest({
       url,
@@ -286,7 +316,11 @@ async function getChapterImageList (chapterUrl: string) {
       payload: JSON.stringify({
         ep_id: episodeId
       }),
-      contentType: 'application/json'
+      contentType: 'application/json',
+      headers: {
+        ...BASE_HTTP_HEADERS,
+        Referer: chapterUrl
+      }
     })
     const response = await JSON.parse(rawResponse) as IBilibiliApi<{
       images: {
@@ -346,7 +380,10 @@ async function getImageUrl (path: string) {
       url: 'https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=pc&platform=web&nov=25',
       method: 'POST',
       payload: JSON.stringify(payload),
-      contentType: 'application/json'
+      contentType: 'application/json',
+      headers: {
+        ...BASE_HTTP_HEADERS
+      }
     })
     const response = JSON.parse(rawResponse) as IBilibiliApi<{
       url: string
@@ -399,13 +436,17 @@ async function addReadHistory (url: string) {
 
   try {
     await window.Rulia.httpRequest({
-      url: 'https://manga.bilibili.com/twirp/bookshelf.v1.Bookshelf/AddHistory?device=pc&platform=web',
+      url: 'https://manga.bilibili.com/twirp/bookshelf.v1.Bookshelf/AddHistory?device=pc&platform=web&nov=25',
       method: 'POST',
       payload: JSON.stringify({
         comic_id: parseInt(seasonId),
         ep_id: parseInt(episodeId)
       }),
-      contentType: 'application/json'
+      contentType: 'application/json',
+      headers: {
+        ...BASE_HTTP_HEADERS,
+        Referer: url
+      }
     })
 
     window.Rulia.endWithResult('{}')
